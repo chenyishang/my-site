@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python学习站 | 杰克的数据分析之路</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --light: #dfe6e9;
+            --bg: #0a0a0f;
+            --card-bg: rgba(255,255,255,0.05);
+            --python-blue: #3776ab;
+            --python-yellow: #ffd43b;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        /* ===== 导航栏 ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            background: rgba(10,10,15,0.7);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        nav .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        nav .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        nav .nav-links a:hover {
+            color: #fff;
+        }
+
+        nav .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* ===== Hero 区域 ===== */
+        .hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(108,92,231,0.3), transparent 70%);
+            top: -100px;
+            right: -100px;
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(253,121,168,0.2), transparent 70%);
+            bottom: -50px;
+            left: -50px;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--python-yellow), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.6);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero .meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+
+        /* ===== 通用 Section ===== */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .section-title .emoji {
+            font-size: 1.8rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 3rem;
+            font-size: 1rem;
+        }
+
+        /* ===== 学习路径导航 ===== */
+        .learning-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+        }
+
+        .learning-nav a {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .learning-nav a:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* ===== 模块卡片 ===== */
+        .module-section {
+            margin-bottom: 5rem;
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .module-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .module-title h2 {
+            font-size: 1.8rem;
+            font-weight: 900;
+        }
+
+        .module-title p {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+
+        /* ===== 知识卡片 ===== */
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .knowledge-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .knowledge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .knowledge-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .knowledge-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(108,92,231,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .knowledge-card .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .knowledge-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            color: var(--secondary);
+        }
+
+        .knowledge-card p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .knowledge-card .highlight {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .knowledge-card .tag {
+            display: inline-block;
+            background: rgba(108,92,231,0.2);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .knowledge-card .tag.important {
+            background: rgba(253,121,168,0.2);
+            color: var(--accent);
+        }
+
+        .knowledge-card .goal-box {
+            background: rgba(0,206,201,0.1);
+            border-left: 3px solid var(--secondary);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .knowledge-card .goal-box .label {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+        }
+
+        .knowledge-card .goal-box p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* ===== 时间线 ===== */
+        .timeline-section {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent), var(--secondary));
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+            padding-left: 2rem;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.35rem;
+            top: 0.3rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 20px rgba(253,121,168,0.5);
+        }
+
+        .timeline-item .time-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-item p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        /* ===== 方法卡片 ===== */
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .method-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .method-card:hover {
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+        }
+
+        .method-card .method-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .method-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            color: var(--secondary);
+        }
+
+        .method-card p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .method-card .example {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid var(--accent);
+        }
+
+        /* ===== 资源推荐 ===== */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .resource-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .resource-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(108,92,231,0.2);
+        }
+
+        .resource-card .resource-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .resource-card .resource-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .resource-card .resource-info p {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+        }
+
+        .resource-card .resource-info .tag {
+            margin-top: 0.5rem;
+        }
+
+        /* ===== 代码示例框 ===== */
+        .code-box {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .code-box .comment {
+            color: #6a9955;
+        }
+
+        .code-box .keyword {
+            color: #569cd6;
+        }
+
+        .code-box .string {
+            color: #ce9178;
+        }
+
+        .code-box .function {
+            color: #dcdcaa;
+        }
+
+        .code-box .variable {
+            color: #9cdcfe;
+        }
+
+        /* ===== 提示框 ===== */
+        .tip-box {
+            background: rgba(108,92,231,0.1);
+            border: 1px solid rgba(108,92,231,0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .tip-box .tip-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tip-box .tip-content h4 {
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .tip-box .tip-content p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        /* ===== 进度指示器 ===== */
+        .progress-section {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .progress-bar-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0;
+            transition: width 1.5s ease;
+        }
+
+        /* ===== 页脚 ===== */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.3);
+            font-size: 0.85rem;
+        }
+
+        footer .heart {
+            color: var(--accent);
+            display: inline-block;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* ===== 滚动显示动画 ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            nav .nav-links {
+                display: none;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .knowledge-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .module-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* ===== 粒子背景 ===== */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: drift linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 粒子背景 -->
+    <div class="particles" id="particles"></div>
+
+    <!-- 导航栏 -->
+    <nav>
+        <div class="logo">🐍 Python学习站</div>
+        <ul class="nav-links">
+            <li><a href="index.html">🏠 返回主页</a></li>
+            <li><a href="#basics">📚 核心基础</a></li>
+            <li><a href="#tools">🛠️ 专用武器</a></li>
+            <li><a href="#strategy">🚀 学习策略</a></li>
+            <li><a href="#resources">📖 资源推荐</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-icon">🐍</div>
+            <h1>Python <span class="highlight">学习站</span></h1>
+            <p class="subtitle">从零基础到数据分析高手，让AI成为你的编程导师。这不是枯燥的教程，而是你通往数据世界的钥匙！</p>
+            <div class="meta">
+                <div class="meta-item">
+                    <span>🎯</span>
+                    <span>商务数据分析方向</span>
+                </div>
+                <div class="meta-item">
+                    <span>🤖</span>
+                    <span>AI辅助学习</span>
+                </div>
+                <div class="meta-item">
+                    <span>⏱️</span>
+                    <span>4个月速成路线</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 学习路径导航 -->
+    <section>
+        <div class="learning-nav">
+            <a href="#basics">📚 核心基础</a>
+            <a href="#tools">🛠️ 专用武器库</a>
+            <a href="#strategy">🚀 学习策略</a>
+            <a href="#resources">📖 资源推荐</a>
+        </div>
+    </section>
+
+    <!-- 第一部分：核心基础 -->
+    <section id="basics" class="reveal">
+        <div class="module-section">
+            <div class="module-header">
+                <div class="module-number">一</div>
+                <div class="module-title">
+                    <h2>必须精通的核心基础</h2>
+                    <p>与AI沟通的"语法" · 编程的通用思维基石</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">💡</div>
+                <div class="tip-content">
+                    <h4>学习目标</h4>
+                    <p>让你能阅读、理解、修改和验证AI生成的代码。不是要你成为程序员，而是要你能和AI"无障碍沟通"！</p>
+                </div>
+            </div>
+
+            <div class="knowledge-grid">
+                <!-- 基础语法与数据结构 -->
+                <div class="knowledge-card">
+                    <div class="card-icon">🏗️</div>
+                    <h3>基础语法与数据结构</h3>
+                    <p>这是所有程序的起点，就像学英语要先学字母和单词一样。</p>
+                    
+                    <p><span class="highlight">核心概念：</span>变量、数据类型（整数、浮点数、字符串、布尔值）、运算符。</p>
+                    
+                    <p><span class="highlight">核心数据结构：</span></p>
+                    <p>• <span class="highlight">列表（List）</span> - 重中之重！存储一列数据，如销售额列表</p>
+                    <p>• <span class="highlight">字典（Dict）</span> - 重中之重！存储键值对，如产品信息</p>
+                    <p>• 元组（Tuple）、集合（Set）- 了解即可</p>
+                    
+                    <span class="tag important">重点</span>
+                    <span class="tag">基础</span>
+                    
+                    <div class="goal-box">
+                        <div class="label">🎯 学习目标</div>
+                        <p>能清晰地向AI描述："我有一个包含字典的列表，需要根据某个键值进行筛选和排序。"</p>
+                    </div>
+                </div>
+
+                <!-- 程序逻辑与控制流 -->
+                <div class="knowledge-card">
+                    <div class="card-icon">🔀</div>
+                    <h3>程序逻辑与控制流</h3>
+                    <p>让程序"思考"和"重复工作"的能力，这是自动化的核心！</p>
+                    
+                    <p><span class="highlight">条件判断（if-elif-else）：</span>让程序根据不同数据做决策，例如判断销售额是否达标。</p>
+                    
+                    <p><span class="highlight">循环（for, while）：</span>自动化处理批量数据的关键，例如遍历文件夹中所有Excel文件，或处理数据表中的每一行。</p>
+                    
+                    <span class="tag important">核心</span>
+                    <span class="tag">自动化</span>
+                    
+                    <div class="goal-box">
+                        <div class="label">🎯 学习目标</div>
+                        <p>能设计业务逻辑并指挥AI实现："请写一个循环，遍历这份订单列表，如果金额大于1000元，就将其归类到'大客户订单'新列表中。"</p>
+                    </div>
+                </div>
+
+                <!-- 函数与模块化 -->
+                <div class="knowledge-card">
+                    <div class="card-icon">📦</div>
+                    <h3>函数与模块化</h3>
+                    <p>让代码清晰、可重复使用、易于维护的关键技能。</p>
+                    
+                    <p><span class="highlight">函数定义：</span>用 <code>def</code> 封装一段可重复使用的代码块。这是让代码清晰、可维护的关键。</p>
+                    
+                    <p><span class="highlight">模块导入：</span>掌握如何用 <code>import</code> 引入强大的工具库（如 pandas），这是Python能力的无限扩展！</p>
+                    
+                    <span class="tag">模块化</span>
+                    <span class="tag">复用</span>
+                    
+                    <div class="goal-box">
+                        <div class="label">🎯 学习目标</div>
+                        <p>能将一个复杂的分析任务分解成几个函数步骤，并让AI分别实现，最后你来组装和调试。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第二部分：专用武器库 -->
+    <section id="tools" class="reveal">
+        <div class="module-section">
+            <div class="module-header">
+                <div class="module-number">二</div>
+                <div class="module-title">
+                    <h2>商务数据分析的专用武器库</h2>
+                    <p>直接产生价值的工具 · 你的专业核心</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">⚡</div>
+                <div class="tip-content">
+                    <h4>重点提示</h4>
+                    <p>这部分是你的专业核心，应投入主要精力！目标是在AI辅助下，独立完成从数据获取到可视化呈现的完整分析流程。</p>
+                </div>
+            </div>
+
+            <div class="knowledge-grid">
+                <!-- NumPy 与 Pandas -->
+                <div class="knowledge-card">
+                    <div class="card-icon">🐼</div>
+                    <h3>数据处理"双雄"：NumPy 与 Pandas</h3>
+                    
+                    <p><span class="highlight">NumPy：</span>重点理解其多维数组概念，它是高效科学计算的基础，许多其他库（包括Pandas）都构建于此之上。初期掌握基础数组操作即可。</p>
+                    
+                    <p><span class="highlight">Pandas：</span>这是你必须投入最多时间精通的库！它的 <code>DataFrame</code>（数据框）是处理表格型数据（如Excel、CSV）的终极武器。</p>
+                    
+                    <p><span class="highlight">关键技能：</span></p>
+                    <p>• 数据读取/写入</p>
+                    <p>• 数据查看与筛选</p>
+                    <p>• 缺失值处理</p>
+                    <p>• 数据排序、分组聚合（groupby）</p>
+                    <p>• 数据合并</p>
+                    
+                    <span class="tag important">必须精通</span>
+                    <span class="tag">数据分析</span>
+                    
+                    <div class="goal-box">
+                        <div class="label">🎯 学习目标</div>
+                        <p>能流畅地使用Pandas完成日常数据整理，并能精准指挥AI："用Pandas读取这个CSV文件，计算每个部门本季度的平均销售额和同比增长率。"</p>
+                    </div>
+                </div>
+
+                <!-- Matplotlib 与 Seaborn -->
+                <div class="knowledge-card">
+                    <div class="card-icon">📊</div>
+                    <h3>数据可视化：Matplotlib 与 Seaborn</h3>
+                    
+                    <p><span class="highlight">Matplotlib：</span>基础绘图库，理解其"图表对象"的层次结构（图形、坐标系、线条、刻度等）。</p>
+                    
+                    <p><span class="highlight">Seaborn：</span>基于Matplotlib，但默认样式更美观，且能更简单地绘制复杂的统计图表（如分布图、分类散点图、热力图等）。</p>
+                    
+                    <p><span class="highlight">常用图表类型：</span></p>
+                    <p>• 折线图 - 展示趋势</p>
+                    <p>• 柱状图 - 对比数据</p>
+                    <p>• 散点图 - 相关性分析</p>
+                    <p>• 箱线图 - 数据分布</p>
+                    
+                    <span class="tag important">可视化</span>
+                    <span class="tag">图表</span>
+                    
+                    <div class="goal-box">
+                        <div class="label">🎯 学习目标</div>
+                        <p>能根据分析结果，选择合适的图表类型，并指挥AI生成具有商业洞察力的可视化图表。</p>
+                    </div>
+                </div>
+
+                <!-- Requests -->
+                <div class="knowledge-card">
+                    <div class="card-icon">🌐</div>
+                    <h3>数据获取基础：Requests</h3>
+                    
+                    <p>学习使用 <code>requests</code> 库进行简单的网络API调用，从公开数据接口获取数据，这是数据采集的入门技能。</p>
+                    
+                    <p>虽然不是核心，但在需要从网络获取数据时会非常有用。配合AI，你可以轻松实现：</p>
+                    <p>• 调用天气API获取数据</p>
+                    <p>• 获取股票实时行情</p>
+                    <p>• 抓取网页数据（入门级）</p>
+                    
+                    <span class="tag">数据采集</span>
+                    <span class="tag">API</span>
+                    
+                    <div class="goal-box">
+                        <div class="label">🎯 学习目标</div>
+                        <p>能使用requests从公开API获取数据，并导入Pandas进行分析。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第三部分：学习策略 -->
+    <section id="strategy" class="reveal">
+        <div class="module-section">
+            <div class="module-header">
+                <div class="module-number">三</div>
+                <div class="module-title">
+                    <h2>AI时代的高效学习策略</h2>
+                    <p>让AI成为你的"导师"和"副驾驶"</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">🚀</div>
+                <div class="tip-content">
+                    <h4>新范式</h4>
+                    <p>传统的"看书→记语法→做题"模式效率已不高。你应该采用 <strong>"项目驱动，AI辅助"</strong> 的新范式！</p>
+                </div>
+            </div>
+
+            <!-- 学习路径时间线 -->
+            <h3 style="margin-bottom: 1.5rem; color: var(--secondary);">📅 学习路径：从基础到应用的快速通道</h3>
+            
+            <div class="timeline-section">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="time-badge">第1-2个月</div>
+                        <h4>🎯 基础攻坚</h4>
+                        <p>快速过一遍核心语法和逻辑。不要死记硬背，通过大量的小练习（可让AI生成题目）来建立感觉。重点是能读懂代码、能描述需求。</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="time-badge">第3-4个月</div>
+                        <h4>🔥 核心武器熟练</h4>
+                        <p>全力学习Pandas和可视化库。最佳方法是找一个你感兴趣的真实数据集（如天猫销售数据、电影票房数据），开始一个分析项目。实践出真知！</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="time-badge">持续实践</div>
+                        <h4>⭐ 能力升华</h4>
+                        <p>将Python应用于你的专业课程作业、社团活动甚至个人兴趣中。例如：分析你的微信账单消费习惯，或爬取并分析招聘网站上数据分析岗位的技能要求。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习方法 -->
+            <h3 style="margin: 3rem 0 1.5rem; color: var(--secondary);">🤝 学习方法：与AI深度协作</h3>
+            
+            <div class="method-grid">
+                <div class="method-card">
+                    <div class="method-icon">🏗️</div>
+                    <h4>让AI生成代码框架</h4>
+                    <p>当你开始一个新项目时，直接向AI描述你的目标，让它为你生成初始代码框架，你的任务是理解和修改它。</p>
+                    <div class="example">
+                        💬 "我想分析某电商销售数据，看看哪个品类的商品最受欢迎。"
+                    </div>
+                </div>
+                <div class="method-card">
+                    <div class="method-icon">🔍</div>
+                    <h4>让AI解释代码</h4>
+                    <p>对任何一段看不懂的代码（无论是AI生成的还是网上找到的），直接选中并问AI逐行解释。这是最有效的学习方式！</p>
+                    <div class="example">
+                        💬 "请逐行解释这段代码的功能和逻辑。"
+                    </div>
+                </div>
+                <div class="method-card">
+                    <div class="method-icon">🐛</div>
+                    <h4>让AI调试错误</h4>
+                    <p>代码报错时，将完整的错误信息粘贴给AI，让它解释错误原因并提供修改方案。通过这个过程，你会积累宝贵的调试经验。</p>
+                    <div class="example">
+                        💬 粘贴错误信息 → AI分析原因 → 提供解决方案
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 资源推荐 -->
+    <section id="resources" class="reveal">
+        <h2 class="section-title"><span class="emoji">📖</span> 资源推荐</h2>
+        <p class="section-subtitle">少而精的学习资源，避免信息过载</p>
+
+        <div class="resource-grid">
+            <a href="https://www.kaggle.com" target="_blank" class="resource-card">
+                <div class="resource-icon">🏆</div>
+                <div class="resource-info">
+                    <h4>Kaggle</h4>
+                    <p>终极练兵场！无数真实数据集和别人的完整分析代码（Notebook），是学习Pandas和数据分析思维的宝库。</p>
+                    <span class="tag important">强烈推荐</span>
+                </div>
+            </a>
+            <a href="https://www.liaoxuefeng.com/wiki/1016959663602400" target="_blank" class="resource-card">
+                <div class="resource-icon">📚</div>
+                <div class="resource-info">
+                    <h4>廖雪峰Python教程</h4>
+                    <p>中文教程，语法入门参考非常清晰，适合快速查阅和理解基础概念。</p>
+                    <span class="tag">中文教程</span>
+                </div>
+            </a>
+            <div class="resource-card">
+                <div class="resource-icon">📕</div>
+                <div class="resource-info">
+                    <h4>《Python编程：从入门到实践》</h4>
+                    <p>经典入门书籍，项目驱动，适合系统学习Python基础。</p>
+                    <span class="tag">书籍</span>
+                </div>
+            </div>
+            <div class="resource-card">
+                <div class="resource-icon">📗</div>
+                <div class="resource-info">
+                    <h4>《利用Python进行数据分析》</h4>
+                    <p>重点学习Pandas部分，数据分析必读经典，作者就是Pandas的创造者！</p>
+                    <span class="tag important">必读</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 快速入门代码示例 -->
+    <section class="reveal">
+        <h2 class="section-title"><span class="emoji">💻</span> 快速入门示例</h2>
+        <p class="section-subtitle">复制这些代码，让AI帮你解释每一行</p>
+
+        <div class="knowledge-grid">
+            <div class="knowledge-card">
+                <h3>🐼 Pandas 数据分析示例</h3>
+                <p>一个典型的数据分析流程：</p>
+                <div class="code-box">
+<span class="comment"># 导入库</span>
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+
+<span class="comment"># 读取数据</span>
+<span class="variable">df</span> = pd.<span class="function">read_csv</span>(<span class="string">'sales_data.csv'</span>)
+
+<span class="comment"># 查看数据基本信息</span>
+<span class="variable">df</span>.<span class="function">head</span>()  <span class="comment"># 前5行</span>
+<span class="variable">df</span>.<span class="function">info</span>()  <span class="comment"># 数据类型</span>
+
+<span class="comment"># 分组聚合分析</span>
+<span class="variable">result</span> = df.<span class="function">groupby</span>(<span class="string">'部门'</span>)[<span class="string">'销售额'</span>].<span class="function">sum</span>()
+
+<span class="comment"># 筛选大客户订单</span>
+<span class="variable">big_orders</span> = df[df[<span class="string">'金额'</span>] > <span class="string">1000</span>]
+                </div>
+            </div>
+            <div class="knowledge-card">
+                <h3>📊 Matplotlib 可视化示例</h3>
+                <p>绘制一个简单的柱状图：</p>
+                <div class="code-box">
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+
+<span class="comment"># 准备数据</span>
+<span class="variable">categories</span> = [<span class="string">'A'</span>, <span class="string">'B'</span>, <span class="string">'C'</span>, <span class="string">'D'</span>]
+<span class="variable">values</span> = [<span class="string">23</span>, <span class="string">45</span>, <span class="string">56</span>, <span class="string">78</span>]
+
+<span class="comment"># 创建图表</span>
+plt.<span class="function">figure</span>(figsize=(<span class="string">10</span>, <span class="string">6</span>))
+plt.<span class="function">bar</span>(categories, values, color=<span class="string">'skyblue'</span>)
+
+<span class="comment"># 添加标题和标签</span>
+plt.<span class="function">title</span>(<span class="string">'销售数据对比'</span>)
+plt.<span class="function">xlabel</span>(<span class="string">'类别'</span>)
+plt.<span class="function">ylabel</span>(<span class="string">'销售额'</span>)
+
+<span class="comment"># 显示图表</span>
+plt.<span class="function">show</span>()
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>用 <span class="heart">❤️</span> 和大量 ☕ 制作 · 杰克 © 2026</p>
+        <p style="margin-top: 0.5rem; font-size: 0.75rem;">学习编程最好的时间是现在，其次是现在</p>
+        <p style="margin-top: 1rem;"><a href="index.html" style="color: var(--primary); text-decoration: none;">🏠 返回主页</a></p>
+    </footer>
+
+    <script>
+        // ===== 粒子背景 =====
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 25; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+            particle.style.animationDelay = (Math.random() * 10) + 's';
+            particle.style.width = (Math.random() * 3 + 1) + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.opacity = Math.random() * 0.5 + 0.1;
+            particlesContainer.appendChild(particle);
+        }
+
+        // ===== 滚动显示 =====
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // ===== 导航栏滚动效果 =====
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.style.padding = '0.5rem 2rem';
+                nav.style.background = 'rgba(10,10,15,0.9)';
+            } else {
+                nav.style.padding = '1rem 2rem';
+                nav.style.background = 'rgba(10,10,15,0.7)';
+            }
+        });
+
+        // ===== 平滑滚动 =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
