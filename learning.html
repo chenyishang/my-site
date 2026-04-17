@@ -716,9 +716,588 @@
             90% { opacity: 1; }
             100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
         }
+
+        /* ============================================
+           悬浮 Python 代码运行器 (Code Runner Panel)
+           ============================================ */
+
+        /* 悬浮触发按钮 */
+        .py-runner-trigger {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9998;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--python-blue), #306998);
+            color: #fff;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            box-shadow: 0 4px 25px rgba(55,118,171,0.5);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .py-runner-trigger:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 35px rgba(55,118,171,0.7);
+        }
+
+        .py-runner-trigger .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+        }
+
+        /* 悬浮面板 */
+        .py-runner-panel {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 580px;
+            max-width: calc(100vw - 2rem);
+            max-height: 75vh;
+            z-index: 9999;
+            background: #12121a;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(55,118,171,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: bottom right;
+        }
+
+        .py-runner-panel.collapsed {
+            transform: scale(0.1);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .py-runner-panel.minimized {
+            max-height: 48px;
+        }
+
+        .py-runner-panel.minimized .panel-body {
+            display: none;
+        }
+
+        /* 面板头部 */
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1rem;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            cursor: move;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .panel-header .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .panel-header .header-left .logo-icon {
+            font-size: 1.2rem;
+        }
+
+        .panel-header .header-left .title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .panel-header .header-left .status {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .panel-header .header-left .status.loading {
+            background: rgba(255,211,59,0.2);
+            color: var(--python-yellow);
+        }
+
+        .panel-header .header-left .status.ready {
+            background: rgba(0,206,201,0.2);
+            color: var(--secondary);
+        }
+
+        .panel-header .header-left .status.error {
+            background: rgba(255,107,107,0.2);
+            color: #ff6b6b;
+        }
+
+        .panel-header .header-actions {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .panel-header .header-actions button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .panel-header .header-actions button:hover {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+
+        /* 标签栏 */
+        .panel-tabs {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .panel-tabs .tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .panel-tabs .tab:hover {
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .panel-tabs .tab.active {
+            color: var(--python-yellow);
+            border-bottom-color: var(--python-yellow);
+        }
+
+        .panel-tabs .tab .tab-close {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .panel-tabs .tab:hover .tab-close {
+            opacity: 0.6;
+        }
+
+        .panel-tabs .tab .tab-close:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .panel-tabs .add-tab {
+            padding: 0.5rem 0.8rem;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .panel-tabs .add-tab:hover {
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* 面板主体 */
+        .panel-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 编辑器区域 */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.4rem 0.8rem;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+
+        .editor-toolbar .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .editor-toolbar .run-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #3776ab, #306998);
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .editor-toolbar .run-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 12px rgba(55,118,171,0.4);
+        }
+
+        .editor-toolbar .run-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .editor-toolbar .run-btn .spinner {
+            display: none;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .editor-toolbar .run-btn.running .spinner {
+            display: block;
+        }
+
+        .editor-toolbar .run-btn.running .play-icon {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .code-editor {
+            flex: 1;
+            width: 100%;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: none;
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            tab-size: 4;
+            overflow-y: auto;
+        }
+
+        .code-editor::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+
+        /* 分割条 */
+        .splitter {
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            cursor: row-resize;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .splitter:hover {
+            background: var(--primary);
+        }
+
+        /* 输出区域 */
+        .output-area {
+            height: 180px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .output-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.35rem 0.8rem;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+
+        .output-header .output-title {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .output-header .clear-btn {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .output-header .clear-btn:hover {
+            color: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.06);
+        }
+
+        .output-content {
+            flex: 1;
+            background: #0a0a12;
+            padding: 0.8rem 1rem;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            overflow-y: auto;
+            color: #c9d1d9;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .output-content .output-line {
+            margin-bottom: 0.2rem;
+        }
+
+        .output-content .output-line.stdout {
+            color: #c9d1d9;
+        }
+
+        .output-content .output-line.stderr {
+            color: #ff6b6b;
+        }
+
+        .output-content .output-line.system {
+            color: rgba(255,255,255,0.3);
+            font-style: italic;
+        }
+
+        .output-content .output-line.success {
+            color: var(--secondary);
+        }
+
+        .output-content .output-line img-output {
+            margin: 0.5rem 0;
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* ===== 内嵌可运行代码块 ===== */
+        .runnable-code-block {
+            background: #0d1117;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .runnable-code-block:hover {
+            border-color: rgba(55,118,171,0.4);
+        }
+
+        .runnable-code-block .block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .runnable-code-block .block-header .block-title {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .runnable-code-block .block-header .block-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .runnable-code-block .block-header .block-actions button {
+            padding: 0.3rem 0.8rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .runnable-code-block .run-inline-btn {
+            background: linear-gradient(135deg, #3776ab, #306998);
+            color: #fff;
+        }
+
+        .runnable-code-block .run-inline-btn:hover {
+            box-shadow: 0 2px 10px rgba(55,118,171,0.4);
+            transform: translateY(-1px);
+        }
+
+        .runnable-code-block .open-in-panel-btn {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.6);
+        }
+
+        .runnable-code-block .open-in-panel-btn:hover {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+
+        .runnable-code-block .block-code {
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: #c9d1d9;
+            white-space: pre;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .runnable-code-block .block-output {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            background: #0a0a12;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .runnable-code-block .block-output.open {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .runnable-code-block .block-output .output-header {
+            padding: 0.4rem 1rem;
+        }
+
+        .runnable-code-block .block-output .output-content {
+            padding: 0.8rem 1rem;
+            max-height: 300px;
+        }
+
+        /* ===== Pyodide 加载遮罩 ===== */
+        .pyodide-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10,10,15,0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .pyodide-loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .pyodide-loading-overlay .loader-icon {
+            font-size: 3rem;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        .pyodide-loading-overlay .loader-text {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .pyodide-loading-overlay .loader-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .pyodide-loading-overlay .loader-bar .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--python-blue), var(--python-yellow));
+            border-radius: 2px;
+            width: 0;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Pyodide 加载遮罩 -->
+    <div class="pyodide-loading-overlay" id="pyodideOverlay">
+        <div class="loader-icon">🐍</div>
+        <div class="loader-text" id="loadingText">正在加载 Python 运行环境...</div>
+        <div class="loader-bar"><div class="bar-fill" id="loadingBar"></div></div>
+    </div>
 
     <!-- 粒子背景 -->
     <div class="particles" id="particles"></div>
@@ -754,6 +1333,10 @@
                     <span>⏱️</span>
                     <span>4个月速成路线</span>
                 </div>
+                <div class="meta-item">
+                    <span>▶️</span>
+                    <span>在线运行代码</span>
+                </div>
             </div>
         </div>
     </section>
@@ -765,6 +1348,7 @@
             <a href="#tools">🛠️ 专用武器库</a>
             <a href="#strategy">🚀 学习策略</a>
             <a href="#resources">📖 资源推荐</a>
+            <a href="#playground">💻 在线练手</a>
         </div>
     </section>
 
@@ -803,6 +1387,25 @@
                     
                     <span class="tag important">重点</span>
                     <span class="tag">基础</span>
+
+                    <!-- 可运行代码块 -->
+                    <div class="runnable-code-block" data-code="# ===== 变量与数据类型 =====&#10;name = &quot;杰克&quot;&#10;age = 20&#10;height = 1.75&#10;is_student = True&#10;print(f&quot;姓名: {name}, 年龄: {age}, 身高: {height}m&quot;)&#10;print(f&quot;是学生吗? {is_student}&quot;)&#10;&#10;# ===== 列表 (List) =====&#10;sales = [1200, 3500, 800, 4200, 2100]&#10;print(f&quot;\n销售额列表: {sales}&quot;)&#10;print(f&quot;总销售额: {sum(sales)}&quot;)&#10;print(f&quot;最高销售: {max(sales)}&quot;)&#10;print(f&quot;平均销售: {sum(sales)/len(sales):.0f}&quot;)&#10;&#10;# ===== 字典 (Dict) =====&#10;product = {&#10;    &quot;名称&quot;: &quot;Python数据分析&quot;,&#10;    &quot;价格&quot;: 99.9,&#10;    &quot;销量&quot;: 1500,&#10;    &quot;评分&quot;: 4.8&#10;}&#10;print(f&quot;\n产品信息: {product['名称']}&quot;)&#10;print(f&quot;总收入: {product['价格'] * product['销量']:.0f}元&quot;)">
+                        <div class="block-header">
+                            <div class="block-title">🐍 基础语法与数据结构</div>
+                            <div class="block-actions">
+                                <button class="run-inline-btn" onclick="runInlineCode(this)">▶ 运行</button>
+                                <button class="open-in-panel-btn" onclick="openInPanel(this)">↗ 面板</button>
+                            </div>
+                        </div>
+                        <div class="block-code"></div>
+                        <div class="block-output">
+                            <div class="output-header">
+                                <span class="output-title">📤 输出</span>
+                                <button class="clear-btn" onclick="clearInlineOutput(this)">清空</button>
+                            </div>
+                            <div class="output-content"></div>
+                        </div>
+                    </div>
                     
                     <div class="goal-box">
                         <div class="label">🎯 学习目标</div>
@@ -822,6 +1425,24 @@
                     
                     <span class="tag important">核心</span>
                     <span class="tag">自动化</span>
+
+                    <div class="runnable-code-block" data-code="# ===== 条件判断 =====&#10;sales = 1500&#10;if sales >= 2000:&#10;    level = &quot;顶级客户 💎&quot;&#10;elif sales >= 1000:&#10;    level = &quot;大客户 🥇&quot;&#10;elif sales >= 500:&#10;    level = &quot;普通客户 🥈&quot;&#10;else:&#10;    level = &quot;新客户 🥉&quot;&#10;print(f&quot;销售额 {sales} 元 → {level}&quot;)&#10;&#10;# ===== 循环 + 列表推导 =====&#10;orders = [&#10;    {&quot;客户&quot;: &quot;张三&quot;, &quot;金额&quot;: 2500},&#10;    {&quot;客户&quot;: &quot;李四&quot;, &quot;金额&quot;: 800},&#10;    {&quot;客户&quot;: &quot;王五&quot;, &quot;金额&quot;: 3500},&#10;    {&quot;客户&quot;: &quot;赵六&quot;, &quot;金额&quot;: 400},&#10;    {&quot;客户&quot;: &quot;钱七&quot;, &quot;金额&quot;: 1800},&#10;]&#10;&#10;print(&quot;\n===== 大客户订单筛选 =====&quot;)&#10;big_orders = []&#10;for order in orders:&#10;    if order[&quot;金额&quot;] > 1000:&#10;        big_orders.append(order)&#10;        print(f&quot;  ✓ {order['客户']}: {order['金额']}元&quot;)&#10;&#10;print(f&quot;\n共筛选出 {len(big_orders)} 个大客户订单&quot;)&#10;print(f&quot;大客户总金额: {sum(o['金额'] for o in big_orders)}元&quot;)">
+                        <div class="block-header">
+                            <div class="block-title">🔀 条件判断与循环</div>
+                            <div class="block-actions">
+                                <button class="run-inline-btn" onclick="runInlineCode(this)">▶ 运行</button>
+                                <button class="open-in-panel-btn" onclick="openInPanel(this)">↗ 面板</button>
+                            </div>
+                        </div>
+                        <div class="block-code"></div>
+                        <div class="block-output">
+                            <div class="output-header">
+                                <span class="output-title">📤 输出</span>
+                                <button class="clear-btn" onclick="clearInlineOutput(this)">清空</button>
+                            </div>
+                            <div class="output-content"></div>
+                        </div>
+                    </div>
                     
                     <div class="goal-box">
                         <div class="label">🎯 学习目标</div>
@@ -841,6 +1462,24 @@
                     
                     <span class="tag">模块化</span>
                     <span class="tag">复用</span>
+
+                    <div class="runnable-code-block" data-code="# ===== 函数定义与调用 =====&#10;def analyze_sales(sales_list, target=1000):&#10;    &quot;&quot;&quot;分析销售数据&quot;&quot;&quot;&#10;    total = sum(sales_list)&#10;    avg = total / len(sales_list)&#10;    above_target = [s for s in sales_list if s > target]&#10;    &#10;    return {&#10;        &quot;总额&quot;: total,&#10;        &quot;平均&quot;: round(avg, 2),&#10;        &quot;最高&quot;: max(sales_list),&#10;        &quot;达标数量&quot;: len(above_target),&#10;        &quot;达标率&quot;: f&quot;{len(above_target)/len(sales_list)*100:.1f}%&quot;&#10;    }&#10;&#10;# 使用函数&#10;data_a = [800, 1200, 1500, 900, 2100]&#10;data_b = [3000, 2800, 3200, 4100, 3500]&#10;&#10;print(&quot;===== A组销售分析 =====&quot;)&#10;result_a = analyze_sales(data_a)&#10;for key, val in result_a.items():&#10;    print(f&quot;  {key}: {val}&quot;)&#10;&#10;print(&quot;\n===== B组销售分析 =====&quot;)&#10;result_b = analyze_sales(data_b, target=3000)&#10;for key, val in result_b.items():&#10;    print(f&quot;  {key}: {val}&quot;)&#10;&#10;print(f&quot;\n✅ 函数让我们只需写一次逻辑，就能复用多次！&quot;)">
+                        <div class="block-header">
+                            <div class="block-title">📦 函数与模块化</div>
+                            <div class="block-actions">
+                                <button class="run-inline-btn" onclick="runInlineCode(this)">▶ 运行</button>
+                                <button class="open-in-panel-btn" onclick="openInPanel(this)">↗ 面板</button>
+                            </div>
+                        </div>
+                        <div class="block-code"></div>
+                        <div class="block-output">
+                            <div class="output-header">
+                                <span class="output-title">📤 输出</span>
+                                <button class="clear-btn" onclick="clearInlineOutput(this)">清空</button>
+                            </div>
+                            <div class="output-content"></div>
+                        </div>
+                    </div>
                     
                     <div class="goal-box">
                         <div class="label">🎯 学习目标</div>
@@ -889,6 +1528,24 @@
                     
                     <span class="tag important">必须精通</span>
                     <span class="tag">数据分析</span>
+
+                    <div class="runnable-code-block" data-code="import pandas as pd&#10;import numpy as np&#10;&#10;# ===== 创建示例数据 =====&#10;data = {&#10;    &quot;部门&quot;: [&quot;销售一部&quot;, &quot;销售二部&quot;, &quot;销售三部&quot;, &quot;销售一部&quot;, &quot;销售二部&quot;],&#10;    &quot;员工&quot;: [&quot;张三&quot;, &quot;李四&quot;, &quot;王五&quot;, &quot;赵六&quot;, &quot;钱七&quot;],&#10;    &quot;销售额&quot;: [15000, 23000, 18000, 28000, 19500],&#10;    &quot;订单数&quot;: [45, 67, 52, 83, 58]&#10;}&#10;df = pd.DataFrame(data)&#10;&#10;print(&quot;===== 原始数据 =====&quot;)&#10;print(df.to_string())&#10;&#10;print(&quot;\n===== 各部门汇总 =====&quot;)&#10;summary = df.groupby(&quot;部门&quot;).agg({&#10;    &quot;销售额&quot;: [&quot;sum&quot;, &quot;mean&quot;, &quot;max&quot;],&#10;    &quot;订单数&quot;: &quot;sum&quot;&#10;}).round(0)&#10;print(summary)&#10;&#10;print(&quot;\n===== 销售额排名 =====&quot;)&#10;df[&quot;客单价&quot;] = (df[&quot;销售额&quot;] / df[&quot;订单数&quot;]).round(0)&#10;ranked = df.sort_values(&quot;销售额&quot;, ascending=False)&#10;print(ranked[[&quot;员工&quot;, &quot;销售额&quot;, &quot;客单价&quot;]].to_string())">
+                        <div class="block-header">
+                            <div class="block-title">🐼 Pandas 数据分析</div>
+                            <div class="block-actions">
+                                <button class="run-inline-btn" onclick="runInlineCode(this)">▶ 运行</button>
+                                <button class="open-in-panel-btn" onclick="openInPanel(this)">↗ 面板</button>
+                            </div>
+                        </div>
+                        <div class="block-code"></div>
+                        <div class="block-output">
+                            <div class="output-header">
+                                <span class="output-title">📤 输出</span>
+                                <button class="clear-btn" onclick="clearInlineOutput(this)">清空</button>
+                            </div>
+                            <div class="output-content"></div>
+                        </div>
+                    </div>
                     
                     <div class="goal-box">
                         <div class="label">🎯 学习目标</div>
@@ -913,6 +1570,24 @@
                     
                     <span class="tag important">可视化</span>
                     <span class="tag">图表</span>
+
+                    <div class="runnable-code-block" data-code="import matplotlib&#10;matplotlib.use('AGG')&#10;import matplotlib.pyplot as plt&#10;import numpy as np&#10;&#10;# 设置中文字体&#10;plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']&#10;plt.rcParams['axes.unicode_minus'] = False&#10;&#10;# ===== 创建数据 =====&#10;categories = ['Q1', 'Q2', 'Q3', 'Q4']&#10;sales_2024 = [120, 180, 150, 220]&#10;sales_2025 = [150, 210, 190, 280]&#10;&#10;fig, axes = plt.subplots(1, 2, figsize=(12, 5))&#10;&#10;# 柱状图&#10;x = np.arange(len(categories))&#10;width = 0.35&#10;axes[0].bar(x - width/2, sales_2024, width, label='2024', color='#6c5ce7')&#10;axes[0].bar(x + width/2, sales_2025, width, label='2025', color='#00cec9')&#10;axes[0].set_xlabel('Quarter')&#10;axes[0].set_ylabel('Sales (W)')&#10;axes[0].set_title('Sales Comparison')&#10;axes[0].legend()&#10;&#10;# 折线图&#10;axes[1].plot(categories, sales_2024, 'o-', color='#6c5ce7', linewidth=2, label='2024')&#10;axes[1].plot(categories, sales_2025, 's-', color='#00cec9', linewidth=2, label='2025')&#10;axes[1].fill_between(categories, sales_2024, alpha=0.1, color='#6c5ce7')&#10;axes[1].fill_between(categories, sales_2025, alpha=0.1, color='#00cec9')&#10;axes[1].set_title('Sales Trend')&#10;axes[1].legend()&#10;&#10;plt.tight_layout()&#10;&#10;# 保存并显示&#10;from io import BytesIO&#10;buf = BytesIO()&#10;fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor='#1a1a2e')&#10;plt.close(fig)&#10;buf.seek(0)&#10;&#10;# 输出图片&#10;import base64&#10;img_data = base64.b64encode(buf.read()).decode('utf-8')&#10;print(f&quot;[IMG]data:image/png;base64,{img_data}&quot;)&#10;print(&quot;\n✅ 图表生成成功！上方展示了柱状图对比和折线图趋势。&quot;)">
+                        <div class="block-header">
+                            <div class="block-title">📊 Matplotlib 可视化</div>
+                            <div class="block-actions">
+                                <button class="run-inline-btn" onclick="runInlineCode(this)">▶ 运行</button>
+                                <button class="open-in-panel-btn" onclick="openInPanel(this)">↗ 面板</button>
+                            </div>
+                        </div>
+                        <div class="block-code"></div>
+                        <div class="block-output">
+                            <div class="output-header">
+                                <span class="output-title">📤 输出</span>
+                                <button class="clear-btn" onclick="clearInlineOutput(this)">清空</button>
+                            </div>
+                            <div class="output-content"></div>
+                        </div>
+                    </div>
                     
                     <div class="goal-box">
                         <div class="label">🎯 学习目标</div>
@@ -1059,54 +1734,61 @@
         </div>
     </section>
 
-    <!-- 快速入门代码示例 -->
-    <section class="reveal">
-        <h2 class="section-title"><span class="emoji">💻</span> 快速入门示例</h2>
-        <p class="section-subtitle">复制这些代码，让AI帮你解释每一行</p>
+    <!-- 在线练手 -->
+    <section id="playground" class="reveal">
+        <h2 class="section-title"><span class="emoji">💻</span> 在线练手</h2>
+        <p class="section-subtitle">点击右下角 🐍 按钮，打开悬浮代码运行器，随时编写和运行 Python 代码</p>
+
+        <div class="tip-box">
+            <div class="tip-icon">🐍</div>
+            <div class="tip-content">
+                <h4>使用说明</h4>
+                <p>本页面内置了 <strong>Pyodide</strong>（浏览器端 Python 运行环境），支持 numpy、pandas、matplotlib 等库。<br>
+                你可以：① 直接点击各知识卡片中的 <strong>▶ 运行</strong> 按钮运行示例代码；② 点击 <strong>↗ 面板</strong> 在悬浮编辑器中打开并修改；③ 点击右下角 🐍 按钮打开完整代码编辑器。</p>
+            </div>
+        </div>
 
         <div class="knowledge-grid">
             <div class="knowledge-card">
-                <h3>🐼 Pandas 数据分析示例</h3>
-                <p>一个典型的数据分析流程：</p>
-                <div class="code-box">
-<span class="comment"># 导入库</span>
-<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
-
-<span class="comment"># 读取数据</span>
-<span class="variable">df</span> = pd.<span class="function">read_csv</span>(<span class="string">'sales_data.csv'</span>)
-
-<span class="comment"># 查看数据基本信息</span>
-<span class="variable">df</span>.<span class="function">head</span>()  <span class="comment"># 前5行</span>
-<span class="variable">df</span>.<span class="function">info</span>()  <span class="comment"># 数据类型</span>
-
-<span class="comment"># 分组聚合分析</span>
-<span class="variable">result</span> = df.<span class="function">groupby</span>(<span class="string">'部门'</span>)[<span class="string">'销售额'</span>].<span class="function">sum</span>()
-
-<span class="comment"># 筛选大客户订单</span>
-<span class="variable">big_orders</span> = df[df[<span class="string">'金额'</span>] > <span class="string">1000</span>]
+                <h3>🎲 综合练习：随机数据分析</h3>
+                <p>结合 NumPy、Pandas 的综合练习，生成随机数据并分析：</p>
+                <div class="runnable-code-block" data-code="import numpy as np&#10;import pandas as pd&#10;&#10;np.random.seed(42)&#10;&#10;# 生成模拟销售数据&#10;n = 30&#10;products = ['手机', '电脑', '平板', '耳机', '手表']&#10;regions = ['华南', '华东', '华北', '西南']&#10;&#10;data = pd.DataFrame({&#10;    '产品': np.random.choice(products, n),&#10;    '地区': np.random.choice(regions, n),&#10;    '销量': np.random.randint(50, 500, n),&#10;    '单价': np.random.uniform(100, 5000, n).round(0),&#10;})&#10;data['销售额'] = (data['销量'] * data['单价']).round(0)&#10;&#10;print(&quot;===== 销售数据 (前10行) =====&quot;)&#10;print(data.head(10).to_string())&#10;&#10;print(&quot;\n===== 各产品总销售额排名 =====&quot;)&#10;product_sales = data.groupby('产品')['销售额'].sum().sort_values(ascending=False)&#10;for prod, val in product_sales.items():&#10;    bar = '█' * int(val / product_sales.max() * 20)&#10;    print(f&quot;  {prod}: {val:>10,.0f}元 {bar}&quot;)&#10;&#10;print(&quot;\n===== 各地区统计 =====&quot;)&#10;region_stats = data.groupby('地区').agg({&#10;    '销售额': ['sum', 'mean', 'count']&#10;}).round(0)&#10;print(region_stats)&#10;&#10;print(f&quot;\n📊 总销售额: {data['销售额'].sum():,.0f}元&quot;)&#10;print(f&quot📊 平均订单: {data['销售额'].mean():,.0f}元&quot;)&#10;print(f&quot📊 最高订单: {data['销售额'].max():,.0f}元&quot;)">
+                    <div class="block-header">
+                        <div class="block-title">🎲 综合练习</div>
+                        <div class="block-actions">
+                            <button class="run-inline-btn" onclick="runInlineCode(this)">▶ 运行</button>
+                            <button class="open-in-panel-btn" onclick="openInPanel(this)">↗ 面板</button>
+                        </div>
+                    </div>
+                    <div class="block-code"></div>
+                    <div class="block-output">
+                        <div class="output-header">
+                            <span class="output-title">📤 输出</span>
+                            <button class="clear-btn" onclick="clearInlineOutput(this)">清空</button>
+                        </div>
+                        <div class="output-content"></div>
+                    </div>
                 </div>
             </div>
             <div class="knowledge-card">
-                <h3>📊 Matplotlib 可视化示例</h3>
-                <p>绘制一个简单的柱状图：</p>
-                <div class="code-box">
-<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
-
-<span class="comment"># 准备数据</span>
-<span class="variable">categories</span> = [<span class="string">'A'</span>, <span class="string">'B'</span>, <span class="string">'C'</span>, <span class="string">'D'</span>]
-<span class="variable">values</span> = [<span class="string">23</span>, <span class="string">45</span>, <span class="string">56</span>, <span class="string">78</span>]
-
-<span class="comment"># 创建图表</span>
-plt.<span class="function">figure</span>(figsize=(<span class="string">10</span>, <span class="string">6</span>))
-plt.<span class="function">bar</span>(categories, values, color=<span class="string">'skyblue'</span>)
-
-<span class="comment"># 添加标题和标签</span>
-plt.<span class="function">title</span>(<span class="string">'销售数据对比'</span>)
-plt.<span class="function">xlabel</span>(<span class="string">'类别'</span>)
-plt.<span class="function">ylabel</span>(<span class="string">'销售额'</span>)
-
-<span class="comment"># 显示图表</span>
-plt.<span class="function">show</span>()
+                <h3>📈 可视化练习：生成图表</h3>
+                <p>用 Matplotlib 生成可视化图表并直接显示在页面中：</p>
+                <div class="runnable-code-block" data-code="import matplotlib&#10;matplotlib.use('AGG')&#10;import matplotlib.pyplot as plt&#10;import numpy as np&#10;&#10;plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']&#10;plt.rcParams['axes.unicode_minus'] = False&#10;&#10;np.random.seed(42)&#10;&#10;fig, axes = plt.subplots(2, 2, figsize=(12, 9))&#10;fig.patch.set_facecolor('#1a1a2e')&#10;&#10;for ax in axes.flat:&#10;    ax.set_facecolor('#0d1117')&#10;    ax.tick_params(colors='#888')&#10;    ax.spines['bottom'].set_color('#333')&#10;    ax.spines['left'].set_color('#333')&#10;    ax.spines['top'].set_visible(False)&#10;    ax.spines['right'].set_visible(False)&#10;&#10;# 1. 柱状图&#10;categories = ['Phone', 'PC', 'Tablet', 'Earbuds', 'Watch']&#10;values = [4500, 3800, 2200, 1800, 2900]&#10;colors = ['#6c5ce7', '#00cec9', '#fd79a8', '#ffeaa7', '#55efc4']&#10;axes[0,0].bar(categories, values, color=colors)&#10;axes[0,0].set_title('Product Sales', color='white', fontsize=12)&#10;&#10;# 2. 饼图&#10;axes[0,1].pie(values, labels=categories, colors=colors, autopct='%1.1f%%',&#10;    textprops={'color': 'white', 'fontsize': 9})&#10;axes[0,1].set_title('Market Share', color='white', fontsize=12)&#10;&#10;# 3. 折线图&#10;months = ['Jan','Feb','Mar','Apr','May','Jun']&#10;axes[1,0].plot(months, [120,150,180,160,200,230], 'o-', color='#6c5ce7', linewidth=2, label='2024')&#10;axes[1,0].plot(months, [140,180,210,200,250,280], 's-', color='#00cec9', linewidth=2, label='2025')&#10;axes[1,0].legend(facecolor='#1a1a2e', edgecolor='#333', labelcolor='white')&#10;axes[1,0].set_title('Monthly Trend', color='white', fontsize=12)&#10;&#10;# 4. 散点图&#10;x = np.random.randn(80)&#10;y = 0.8*x + np.random.randn(80)*0.5&#10;axes[1,1].scatter(x, y, c=np.abs(x+y), cmap='plasma', alpha=0.7, s=40)&#10;axes[1,1].set_title('Correlation', color='white', fontsize=12)&#10;&#10;plt.tight_layout()&#10;&#10;from io import BytesIO&#10;import base64&#10;buf = BytesIO()&#10;fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor='#1a1a2e')&#10;plt.close(fig)&#10;buf.seek(0)&#10;&#10;img_data = base64.b64encode(buf.read()).decode('utf-8')&#10;print(f&quot;[IMG]data:image/png;base64,{img_data}&quot;)&#10;print(&quot;\n✅ 四种图表生成成功！柱状图、饼图、折线图、散点图。&quot;)">
+                    <div class="block-header">
+                        <div class="block-title">📈 可视化练习</div>
+                        <div class="block-actions">
+                            <button class="run-inline-btn" onclick="runInlineCode(this)">▶ 运行</button>
+                            <button class="open-in-panel-btn" onclick="openInPanel(this)">↗ 面板</button>
+                        </div>
+                    </div>
+                    <div class="block-code"></div>
+                    <div class="block-output">
+                        <div class="output-header">
+                            <span class="output-title">📤 输出</span>
+                            <button class="clear-btn" onclick="clearInlineOutput(this)">清空</button>
+                        </div>
+                        <div class="output-content"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1119,7 +1801,432 @@ plt.<span class="function">show</span>()
         <p style="margin-top: 1rem;"><a href="index.html" style="color: var(--primary); text-decoration: none;">🏠 返回主页</a></p>
     </footer>
 
+    <!-- 悬浮触发按钮 -->
+    <button class="py-runner-trigger" id="runnerTrigger" onclick="togglePanel()" title="Python 代码运行器">
+        🐍
+        <span class="badge" id="triggerBadge" style="display:none;">!</span>
+    </button>
+
+    <!-- 悬浮面板 -->
+    <div class="py-runner-panel collapsed" id="runnerPanel">
+        <div class="panel-header" id="panelHeader">
+            <div class="header-left">
+                <span class="logo-icon">🐍</span>
+                <span class="title">Python Runner</span>
+                <span class="status loading" id="pyStatus">加载中</span>
+            </div>
+            <div class="header-actions">
+                <button onclick="minimizePanel()" title="最小化">─</button>
+                <button onclick="togglePanel()" title="关闭">✕</button>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="panel-tabs" id="panelTabs">
+                <div class="tab active" data-tab="0">
+                    <span>📄 main.py</span>
+                </div>
+                <div class="add-tab" onclick="addTab()" title="新建标签">+</div>
+            </div>
+            <div class="editor-area">
+                <div class="editor-toolbar">
+                    <div class="toolbar-left">
+                        <span>Python 3.11 (Pyodide)</span>
+                    </div>
+                    <button class="run-btn" id="panelRunBtn" onclick="runPanelCode()">
+                        <span class="spinner"></span>
+                        <span class="play-icon">▶</span>
+                        <span>运行</span>
+                    </button>
+                </div>
+                <textarea class="code-editor" id="panelEditor" placeholder="# 在这里编写 Python 代码...&#10;print('Hello, World!')" spellcheck="false"># 欢迎使用 Python 在线运行器！&#10;# 试试运行下面的代码：&#10;&#10;print(&quot;Hello, Python! 🐍&quot;)&#10;print(&quot;当前环境支持 numpy, pandas, matplotlib&quot;)&#10;&#10;import sys&#10;print(f&quot;Python 版本: {sys.version}&quot;)</textarea>
+                <div class="splitter" id="splitter"></div>
+                <div class="output-area" id="outputArea">
+                    <div class="output-header">
+                        <span class="output-title">📤 输出</span>
+                        <button class="clear-btn" onclick="clearPanelOutput()">清空</button>
+                    </div>
+                    <div class="output-content" id="panelOutput">
+                        <div class="output-line system">等待运行...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pyodide CDN -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+
     <script>
+        // ===== 全局状态 =====
+        let pyodide = null;
+        let pyodideReady = false;
+        let panelVisible = false;
+        let panelMinimized = false;
+        let tabCounter = 1;
+        let tabs = [{ id: 0, name: 'main.py', code: document.getElementById('panelEditor').value }];
+        let activeTab = 0;
+
+        // ===== 初始化内嵌代码块 =====
+        document.querySelectorAll('.runnable-code-block').forEach(block => {
+            const code = block.getAttribute('data-code');
+            const codeEl = block.querySelector('.block-code');
+            if (code && codeEl) {
+                codeEl.textContent = code;
+            }
+        });
+
+        // ===== Pyodide 初始化 =====
+        async function initPyodide() {
+            const overlay = document.getElementById('pyodideOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const loadingBar = document.getElementById('loadingBar');
+            const statusEl = document.getElementById('pyStatus');
+
+            overlay.classList.add('active');
+            loadingBar.style.width = '10%';
+            loadingText.textContent = '正在加载 Python 运行环境...';
+
+            try {
+                loadingBar.style.width = '30%';
+                loadingText.textContent = '下载 Pyodide 核心 (~10MB)...';
+
+                pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+                });
+
+                loadingBar.style.width = '60%';
+                loadingText.textContent = '加载 numpy, pandas, matplotlib...';
+
+                await pyodide.loadPackage(['numpy', 'pandas', 'matplotlib']);
+
+                loadingBar.style.width = '90%';
+                loadingText.textContent = '初始化完成！';
+
+                // 设置 stdout/stderr
+                pyodide.runPython(`
+import sys, io
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+`);
+
+                pyodideReady = true;
+                statusEl.textContent = '就绪';
+                statusEl.className = 'status ready';
+
+                loadingBar.style.width = '100%';
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 500);
+
+                console.log('✅ Pyodide loaded successfully');
+
+            } catch (err) {
+                loadingText.textContent = '加载失败: ' + err.message;
+                statusEl.textContent = '错误';
+                statusEl.className = 'status error';
+                loadingBar.style.width = '100%';
+                loadingBar.querySelector('.bar-fill').style.background = '#ff6b6b';
+                console.error('Pyodide load error:', err);
+
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 3000);
+            }
+        }
+
+        // 延迟加载，不阻塞页面渲染
+        setTimeout(initPyodide, 1000);
+
+        // ===== 运行 Python 代码 =====
+        async function executePython(code) {
+            if (!pyodideReady) {
+                return { success: false, output: '⏳ Python 环境正在加载中，请稍候...\n（首次加载需要下载约 20MB 数据）' };
+            }
+
+            // 重置 stdout/stderr
+            pyodide.runPython(`
+import sys, io
+_stdout = sys.stdout = io.StringIO()
+_stderr = sys.stderr = io.StringIO()
+`);
+
+            try {
+                const result = await pyodide.runPythonAsync(code);
+                const stdout = pyodide.runPython('_stdout.getvalue()');
+                const stderr = pyodide.runPython('_stderr.getvalue()');
+
+                let output = '';
+                if (stdout) output += stdout;
+                if (stderr) output += (output ? '\n' : '') + stderr;
+                if (result !== undefined && result !== null && String(result) !== 'None') {
+                    output += (output ? '\n' : '') + String(result);
+                }
+
+                return { success: true, output: output || '(无输出)' };
+
+            } catch (err) {
+                const stderr = pyodide.runPython('_stderr.getvalue()');
+                let errorMsg = stderr ? stderr + '\n' : '';
+                errorMsg += err.message;
+                return { success: false, output: errorMsg };
+            }
+        }
+
+        // ===== 渲染输出（支持图片） =====
+        function renderOutput(outputEl, text) {
+            outputEl.innerHTML = '';
+            const lines = text.split('\n');
+            lines.forEach(line => {
+                // 检查是否是图片
+                const imgMatch = line.match(/^\[IMG\](data:image\/[^;]+;base64,.+)$/);
+                if (imgMatch) {
+                    const img = document.createElement('img');
+                    img.src = imgMatch[1];
+                    img.className = 'img-output';
+                    img.style.maxWidth = '100%';
+                    img.style.borderRadius = '8px';
+                    img.style.margin = '0.5rem 0';
+                    img.style.border = '1px solid rgba(255,255,255,0.1)';
+                    outputEl.appendChild(img);
+                } else if (line.trim()) {
+                    const div = document.createElement('div');
+                    div.className = 'output-line stdout';
+                    div.textContent = line;
+                    outputEl.appendChild(div);
+                }
+            });
+        }
+
+        // ===== 内嵌代码块运行 =====
+        async function runInlineCode(btn) {
+            const block = btn.closest('.runnable-code-block');
+            const code = block.getAttribute('data-code');
+            const outputDiv = block.querySelector('.block-output');
+            const outputContent = outputDiv.querySelector('.output-content');
+
+            outputDiv.classList.add('open');
+            outputContent.innerHTML = '<div class="output-line system">⏳ 运行中...</div>';
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 运行中...';
+
+            const result = await executePython(code);
+            renderOutput(outputContent, result.output);
+
+            btn.disabled = false;
+            btn.innerHTML = '▶ 运行';
+        }
+
+        function clearInlineOutput(btn) {
+            const block = btn.closest('.runnable-code-block');
+            const outputContent = block.querySelector('.output-content');
+            outputContent.innerHTML = '';
+            block.querySelector('.block-output').classList.remove('open');
+        }
+
+        function openInPanel(btn) {
+            const block = btn.closest('.runnable-code-block');
+            const code = block.getAttribute('data-code');
+            openPanelWithCode(code);
+        }
+
+        // ===== 悬浮面板控制 =====
+        function togglePanel() {
+            const panel = document.getElementById('runnerPanel');
+            panelVisible = !panelVisible;
+            panelMinimized = false;
+            panel.classList.toggle('collapsed', !panelVisible);
+            panel.classList.remove('minimized');
+        }
+
+        function minimizePanel() {
+            const panel = document.getElementById('runnerPanel');
+            panelMinimized = !panelMinimized;
+            panel.classList.toggle('minimized', panelMinimized);
+        }
+
+        function openPanelWithCode(code) {
+            const panel = document.getElementById('runnerPanel');
+            const editor = document.getElementById('panelEditor');
+
+            // 添加新标签
+            tabCounter++;
+            const newTab = { id: tabCounter, name: `script_${tabCounter}.py`, code: code };
+            tabs.push(newTab);
+
+            // 更新标签 UI
+            renderTabs();
+            switchTab(tabCounter);
+
+            // 显示面板
+            panelVisible = true;
+            panelMinimized = false;
+            panel.classList.remove('collapsed', 'minimized');
+        }
+
+        // ===== 标签管理 =====
+        function renderTabs() {
+            const tabsContainer = document.getElementById('panelTabs');
+            tabsContainer.innerHTML = '';
+
+            tabs.forEach(tab => {
+                const tabEl = document.createElement('div');
+                tabEl.className = `tab ${tab.id === activeTab ? 'active' : ''}`;
+                tabEl.dataset.tab = tab.id;
+                tabEl.innerHTML = `
+                    <span>📄 ${tab.name}</span>
+                    ${tabs.length > 1 ? `<span class="tab-close" onclick="event.stopPropagation(); closeTab(${tab.id})">✕</span>` : ''}
+                `;
+                tabEl.onclick = () => switchTab(tab.id);
+                tabsContainer.appendChild(tabEl);
+            });
+
+            const addBtn = document.createElement('div');
+            addBtn.className = 'add-tab';
+            addBtn.onclick = addTab;
+            addBtn.textContent = '+';
+            tabsContainer.appendChild(addBtn);
+        }
+
+        function switchTab(tabId) {
+            // 保存当前标签代码
+            const currentTab = tabs.find(t => t.id === activeTab);
+            if (currentTab) {
+                currentTab.code = document.getElementById('panelEditor').value;
+            }
+
+            activeTab = tabId;
+            const tab = tabs.find(t => t.id === tabId);
+            if (tab) {
+                document.getElementById('panelEditor').value = tab.code;
+            }
+            renderTabs();
+        }
+
+        function addTab() {
+            // 保存当前
+            const currentTab = tabs.find(t => t.id === activeTab);
+            if (currentTab) {
+                currentTab.code = document.getElementById('panelEditor').value;
+            }
+
+            tabCounter++;
+            tabs.push({ id: tabCounter, name: `script_${tabCounter}.py`, code: '# 新建脚本\nprint("Hello!")\n' });
+            switchTab(tabCounter);
+        }
+
+        function closeTab(tabId) {
+            if (tabs.length <= 1) return;
+            tabs = tabs.filter(t => t.id !== tabId);
+            if (activeTab === tabId) {
+                switchTab(tabs[tabs.length - 1].id);
+            }
+            renderTabs();
+        }
+
+        // ===== 面板运行代码 =====
+        async function runPanelCode() {
+            const editor = document.getElementById('panelEditor');
+            const output = document.getElementById('panelOutput');
+            const runBtn = document.getElementById('panelRunBtn');
+            const code = editor.value;
+
+            if (!code.trim()) return;
+
+            runBtn.classList.add('running');
+            runBtn.disabled = true;
+            output.innerHTML = '<div class="output-line system">⏳ 运行中...</div>';
+
+            const result = await executePython(code);
+            renderOutput(output, result.output);
+
+            runBtn.classList.remove('running');
+            runBtn.disabled = false;
+        }
+
+        function clearPanelOutput() {
+            document.getElementById('panelOutput').innerHTML = '<div class="output-line system">等待运行...</div>';
+        }
+
+        // ===== 面板拖拽 =====
+        (function() {
+            const header = document.getElementById('panelHeader');
+            const panel = document.getElementById('runnerPanel');
+            let isDragging = false;
+            let startX, startY, startLeft, startBottom;
+
+            header.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button')) return;
+                isDragging = true;
+                const rect = panel.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = rect.left;
+                startBottom = window.innerHeight - rect.bottom;
+                panel.style.transition = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                panel.style.right = 'auto';
+                panel.style.left = Math.max(0, Math.min(window.innerWidth - 100, startLeft + dx)) + 'px';
+                panel.style.bottom = Math.max(0, Math.min(window.innerHeight - 48, startBottom - dy)) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                panel.style.transition = '';
+            });
+        })();
+
+        // ===== 分割条拖拽 =====
+        (function() {
+            const splitter = document.getElementById('splitter');
+            const outputArea = document.getElementById('outputArea');
+            const editorArea = splitter.parentElement;
+            let isDragging = false;
+            let startY, startHeight;
+
+            splitter.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startY = e.clientY;
+                startHeight = outputArea.offsetHeight;
+                document.body.style.cursor = 'row-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dy = startY - e.clientY;
+                const newHeight = Math.max(60, Math.min(editorArea.offsetHeight - 100, startHeight + dy));
+                outputArea.style.height = newHeight + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            });
+        })();
+
+        // ===== 编辑器 Tab 键支持 =====
+        document.getElementById('panelEditor').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+            // Ctrl+Enter 运行
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                runPanelCode();
+            }
+        });
+
         // ===== 粒子背景 =====
         const particlesContainer = document.getElementById('particles');
         for (let i = 0; i < 25; i++) {
